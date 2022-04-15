@@ -32,22 +32,18 @@
 
       function createGame () {
         function movePlayer(command) {
-          const { keyPressed, playerId } = command;
           const tableMap = {
-            'ArrowUp': { x: 0, y: -1 },
-            'ArrowDown': { x: 0, y: 1 },
-            'ArrowLeft': { x: -1, y: 0 },
-            'ArrowRight': { x: 1, y: 0 }
+            ArrowUp (player) { player.y = player.y === 0 ? 0 : player.y - 1 },
+            ArrowDown (player) { player.y = player.y === 9 ? 9 : player.y + 1 },
+            ArrowLeft (player) { player.x = player.x === 0 ? 0 : player.x - 1 },
+            ArrowRight (player) { player.x = player.x === 9 ? 9 : player.x + 1 }
           }
-          const { x, y } = tableMap[keyPressed];
-          state.players[playerId].x += x;
-          state.players[playerId].y += y;
 
-          state.players[playerId].x > 9 ? state.players[playerId].x = 9 : null;
-          state.players[playerId].x < 0 ? state.players[playerId].x = 0 : null;
-
-          state.players[playerId].y > 9 ? state.players[playerId].y = 9 : null;
-          state.players[playerId].y < 0 ? state.players[playerId].y = 0 : null;
+          const { keyPressed, playerId } = command;
+          const player = state.players[playerId];
+          const moveFunction = tableMap[keyPressed];
+          moveFunction?.(player)
+          return
         }
 
         return {
