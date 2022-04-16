@@ -8,6 +8,21 @@ export default function createGame () {
     }
   };
 
+  const observers = [];
+
+  function start () {
+    const frequency = 2000;
+    setInterval(addFruit, frequency);
+  }
+
+  function subscribe (observer) {
+    observers.push(observer);
+  }
+
+  function notifyAll (command) {
+    observers.forEach(observer => observer(command));
+  }
+
   function setState (newState) {
     Object.assign(state, newState);
   }
@@ -20,14 +35,27 @@ export default function createGame () {
       y: y ? y : Math.floor(Math.random() * state.screen.height),
       score: 0
     };
+
+    notifyAll({
+      type: 'addPlayer',
+      playerId,
+      x: state.players[playerId].x,
+      y: state.players[playerId].y
+    });
   }
 
   function removePlayer (command) {
     const { playerId } = command;
     delete state.players[playerId];
+
+    notifyAll({
+      type: 'removePlayer',
+      playerId,
+    });
   }
 
   function movePlayer(command) {
+    notifyAll(command);
     const tableMap = {
       ArrowUp (player) {
         player.y - 1 < 0
@@ -61,13 +89,31 @@ export default function createGame () {
   }
 
   function addFruit (command) {
-    const { x, y } = command;
-    state.fruits[x + ',' + y] = { x, y, id: x + ',' + y };
+    const x = command?.x ? command.x : Math.floor(Math.random() * state.screen.width);
+    const y = command?.y ? command.y : Math.floor(Math.random() * state.screen.height);
+    const fruitId = `${x},${y}`;
+    if (!state.fruits[fruitId]) {
+    state.fruits[fruitId] = { x, y, id: fruitId };
+    
+    notifyAll({
+      type: 'addFruit',
+      fruitId,
+      x,
+      y
+    })
+    } else {
+      addFruit();
+    }
   }
 
   function removeFruit (command) {
     const { fruitId } = command;
     delete state.fruits[fruitId];
+
+    notifyAll({
+      type: 'removeFruit',
+      fruitId,
+    });
   }
 
   function checkCollision (player) {
@@ -92,6 +138,8 @@ export default function createGame () {
     addFruit,
     removeFruit,
     setState,
-    state
+    subscribe,
+    state,
+    start
   }
 }

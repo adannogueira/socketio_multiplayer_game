@@ -8,6 +8,8 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 const game = createGame();
+game.start();
+game.subscribe(command => io.emit(command.type, command));
 app.use(express.static('public'));
 
 io.on('connection', (socket) => {
@@ -15,9 +17,17 @@ io.on('connection', (socket) => {
   console.log(`Player ${playerId} connected 😸`);
   game.addPlayer({ playerId });
   socket.emit('setup', game.state);
+  socket.on('disconnecting', () => {
+    socket.emit('stopKeyboardListener', playerId);
+  });
   socket.on('disconnect', () => {
     game.removePlayer({ playerId });
     console.log(`Player ${playerId} disconnected 😿`);
+  })
+  socket.on('movePlayer', command => {
+    command.playerId = playerId;
+    command.type = 'movePlayer';
+    game.movePlayer(command);
   })
 });
 
