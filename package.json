@@ -6,9 +6,11 @@
   "author": "Adan Nogueira <adan.nogueira@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node server.js"
+    "start": "nodemon --experimental-specifier-resolution=node server.js"
   },
   "dependencies": {
-    "express": "^4.17.3"
+    "express": "^4.17.3",
+    "nodemon": "^2.0.15",
+    "socket.io": "^4.4.1"
   }
 }
